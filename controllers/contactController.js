@@ -1,7 +1,7 @@
 require('dotenv').config()
-const rateLimit = require("express-rate-limit")
 const sanitizeHtml = require("sanitize-html")
 const postmark = require('postmark')
+const validator = require('validator')
 
 const postmark_client = process.env.POSTMARK
 
@@ -18,12 +18,16 @@ async function postNewContact(req, res, next) {
         return res.status(400).json({ error: "Invalid input detected." });
     }
 
+    if (!validator.isEmail(email)) {
+        return res.status(401).json({ error: `${email} is not a valid email address.` })
+    }
+
     try {
 
-        //* Let's clean the inputs from malicious tags.
-        const safeName = sanitizeHtml(name)
-        const safeEmail = sanitizeHtml(email)
-        const safeMessage = sanitizeHtml(message)
+        //* Let's clean the inputs from malicious tags, also remove white space.
+        const safeName = sanitizeHtml(name.trim())
+        const safeEmail = sanitizeHtml(email.trim())
+        const safeMessage = sanitizeHtml(message.trim())
 
         const client = new postmark.ServerClient(postmark_client)
 

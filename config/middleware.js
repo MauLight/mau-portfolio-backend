@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const jwt = require('jsonwebtoken')
+const rateLimit = require("express-rate-limit")
 const secret = process.env.JWT_SECRET
 
 const requestLogger = (req, _res, next) => {
@@ -29,9 +30,18 @@ const unknownEndpoint = (_req, res) => {
     res.status(404).json({ message: 'Unknown endpoint' })
 }
 
+const limiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute window
+    max: 5, // Max 5 requests per IP per minute
+    message: { error: "Too many requests, please try again later." }, // Custom response
+    headers: true, // Sends `X-RateLimit-*` headers
+    legacyHeaders: false, // Disable old rate limit headers
+})
+
 module.exports = {
     requestLogger,
     checkCredentials,
     errorHandler,
-    unknownEndpoint
+    unknownEndpoint,
+    limiter
 }

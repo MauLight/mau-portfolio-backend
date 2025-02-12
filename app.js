@@ -4,7 +4,7 @@ const express = require('express')
 const express_ws = require('express-ws')
 const bodyParser = require('body-parser')
 
-const { requestLogger, unknownEndpoint, errorHandler } = require('./config/middleware')
+const { requestLogger, unknownEndpoint, errorHandler, limiter } = require('./config/middleware')
 
 const contactRouter = require('./routes/contactRoute')
 
@@ -18,11 +18,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(requestLogger)
 
-//* create websocket connection (needs server setup first*)
-// app.ws('/', (websocket, request) => {
-//     server.handleConnection(websocket, request)
-// })
-
+app.use("/contact", limiter)
 app.use('/', contactRouter)
 
 app.use(unknownEndpoint)
